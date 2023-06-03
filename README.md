@@ -1,3 +1,15 @@
+# Instructions
+1. Go to utils2, run convert_realdata_syntheform.py--changing line no 10.. save the processed data --line no 47, change line no 57 accordingly ,e,g if task==stackoverflow; you should have that folder in the saved path. This processed file will be required in main_func.py
+
+2. change line no 15, 61, 71, 139,140,141 [139,140,141---processed files path location] of main_func.py accordingly
+
+3. Run main_func.py
+
+**Ignore Below Part**
+
+
+
+
 # SAHP
 
 This is the repository for the [Self-Attentive Hawkes Processes](https://proceedings.icml.cc/static/paper_files/icml/2020/1421-Paper.pdf) paper where self-attention is used to adapt the intensity function of Hawkes process.
