@@ -9,15 +9,19 @@ import time
 import torch
 from torch import autograd
 
-from utils.load_synth_data import process_loaded_sequences
+#from  utils import load_synth_data
+#from utils.util import get_batch
+import sys
+sys.path.append('/NS/ssdecl/work/point_process/sahp_repo')
+from utils2.load_synth_data import *
 from train_functions.train_sahp import make_model, train_eval_sahp
 
-DEFAULT_BATCH_SIZE = 32
-DEFAULT_HIDDEN_SIZE = 16
+DEFAULT_BATCH_SIZE = 2
+DEFAULT_HIDDEN_SIZE = 8
 DEFAULT_LEARN_RATE = 5e-5
 
 parser = argparse.ArgumentParser(description="Train the models.")
-parser.add_argument('-e', '--epochs', type=int, default = 1000,
+parser.add_argument('-e', '--epochs', type=int, default = 15,
                     help='number of epochs.')
 parser.add_argument('-b', '--batch', type=int,
                     dest='batch_size', default=DEFAULT_BATCH_SIZE,
@@ -28,7 +32,7 @@ parser.add_argument('--hidden', type=int,
                     dest='hidden_size', default=DEFAULT_HIDDEN_SIZE,
                     help='number of hidden units. (default: {})'.format(DEFAULT_HIDDEN_SIZE))
 parser.add_argument('--d-model', type=int, default=DEFAULT_HIDDEN_SIZE)
-parser.add_argument('--atten-heads', type=int, default=8)
+parser.add_argument('--atten-heads', type=int, default=4)
 parser.add_argument('--pe', type=str,default='add',help='concat, add')
 parser.add_argument('--nLayers', type=int, default=4)
 parser.add_argument('--dropout', type=float, default=0.1)
@@ -53,7 +57,7 @@ parser.add_argument('--samples', default=10,
 parser.add_argument('-m', '--model', default='sahp',
                     type=str, choices=['sahp'],
                     help='choose which models to train.')
-parser.add_argument('-t', '--task', type=str, default='retweet',
+parser.add_argument('-t', '--task', type=str, default='stackoverflow',
                     help = 'task type')
 args = parser.parse_args()
 print(args)
@@ -63,9 +67,8 @@ if torch.cuda.is_available():
 else:
     USE_CUDA = False
 
-SYNTH_DATA_FILES = glob.glob("../data/simulated/*.pkl")
-TYPE_SIZE_DICT = {'retweet': 3, 'bookorder':8, 'meme':5000, 'mimic':75, 'stackOverflow':22,
-                  'synthetic':2}
+SYNTH_DATA_FILES = glob.glob("/NS/ssdecl/work/point_process/sahp_data/stackoverflow/*.pkl")
+TYPE_SIZE_DICT = { 'stackoverflow':4}
 REAL_WORLD_TASKS = list(TYPE_SIZE_DICT.keys())[:5]
 SYNTHETIC_TASKS = list(TYPE_SIZE_DICT.keys())[5:]
 
@@ -133,9 +136,9 @@ if __name__ == '__main__':
         print("No. of event tokens in test subset:", test_seq_lengths.sum())
 
     elif args.task in REAL_WORLD_TASKS:
-        train_path = '../data/' + args.task + '/train_manifold_format.pkl'
-        dev_path = '../data/' + args.task + '/dev_manifold_format.pkl'
-        test_path = '../data/' + args.task + '/test_manifold_format.pkl'
+        train_path = '/NS/ssdecl/work/point_process/sahp_data/' + args.task + '/train.pkl'
+        dev_path = '/NS/ssdecl/work/point_process/sahp_data/' + args.task  + '/dev.pkl'
+        test_path = '/NS/ssdecl/work/point_process/sahp_data/' + args.task +  '/test.pkl'
 
         chosen_file = args.task
 
@@ -199,10 +202,10 @@ if __name__ == '__main__':
     if MODEL_TOKEN == 'sahp':
         with autograd.detect_anomaly():
             params = args, process_dim, device, tmax, \
-                     train_times_tensor, train_seq_types, train_seq_lengths, \
-                     dev_times_tensor, dev_seq_types, dev_seq_lengths, \
-                     test_times_tensor, test_seq_types, test_seq_lengths, \
-                     BATCH_SIZE, EPOCHS, USE_CUDA
+                train_times_tensor, train_seq_types, train_seq_lengths, \
+                dev_times_tensor, dev_seq_types, dev_seq_lengths, \
+                test_times_tensor, test_seq_types, test_seq_lengths, \
+                BATCH_SIZE, EPOCHS, USE_CUDA
             model = train_eval_sahp(params)
 
     else:
